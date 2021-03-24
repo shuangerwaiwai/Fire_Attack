@@ -83,11 +83,23 @@ def get_adv(model, device, test_loader, epsilon, criterion):
 
         if final_pred == target.data:
             correct += 1
+            #保存部分用于对比展示的样本
             if (epsilon == 0) and (len(adv_examples) < 5):
                 adv_ex = perturbed_data.squeeze().detach().cpu().numpy()
                 data = data.squeeze().detach().cpu().numpy()
                 adv_examples.append((data, init_preds, final_pred, adv_ex))
+
+            # 保存全部的扰动样本
+            if epsilon == 0.0002:
+                perturbed_data = perturbed_data.squeeze()
+                perturbed_image = transforms.ToPILImage()(perturbed_data).convert('RGB')
+                if target.item() == 0:
+                    perturbed_image.save(os.path.join(save_adv_dir, 'Fire', 'adv' + str(adv_image_count) + '.png'))
+                else:
+                    perturbed_image.save(os.path.join(save_adv_dir, 'No_Fire', 'adv' + str(adv_image_count) + '.png'))
+                adv_image_count += 1
         else:
+            #部分用于展示的样本
             if len(adv_examples) < 5:
                 adv_ex = perturbed_data.squeeze().detach().cpu().numpy()
                 data = data.squeeze().detach().cpu().numpy()
@@ -96,7 +108,7 @@ def get_adv(model, device, test_loader, epsilon, criterion):
             if epsilon == 0.0002:
                 perturbed_data = perturbed_data.squeeze()
                 perturbed_image = transforms.ToPILImage()(perturbed_data).convert('RGB')
-                if target.item() == 1:
+                if target.item() == 0:
                     perturbed_image.save(os.path.join(save_adv_dir, 'Fire', 'adv' + str(adv_image_count) + '.png'))
                 else:
                     perturbed_image.save(os.path.join(save_adv_dir, 'No_Fire', 'adv' + str(adv_image_count) + '.png'))
