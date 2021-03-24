@@ -96,7 +96,7 @@ def get_adv(model, device, test_loader, epsilon, criterion):
             if epsilon == 0.0002:
                 perturbed_data = perturbed_data.squeeze()
                 perturbed_image = transforms.ToPILImage()(perturbed_data).convert('RGB')
-                if target.item() == 0:
+                if target.item() == 1:
                     perturbed_image.save(os.path.join(save_adv_dir, 'Fire', 'adv' + str(adv_image_count) + '.png'))
                 else:
                     perturbed_image.save(os.path.join(save_adv_dir, 'No_Fire', 'adv' + str(adv_image_count) + '.png'))
