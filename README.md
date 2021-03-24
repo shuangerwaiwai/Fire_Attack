@@ -10,15 +10,6 @@ pytorchvision 0.8.2
 攻击：FGSM
 
 1、模型微调
-Epoch 8/9
-----------
-train Loss: 0.0138 Acc: 0.9950
-val Loss: 0.2860 Acc: 0.9313
-
-Epoch 9/9
-----------
-train Loss: 0.0139 Acc: 0.9948
-val Loss: 0.1692 Acc: 0.9299
 
 Training complete in 9m 42s
 Best val Acc: 0.973570
