@@ -10,15 +10,18 @@ import os
 # epsilons = [0, .02, .04, .06, .08, .1, .2, .3]
 epsilons = [0, .0002, .0004, .0006, .0008, .001]
 
-pretrained_model = "my_model.pth"
+# pretrained_model = "my_model.pth"
+pretrained_model = "my_adv_model.pth"
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 data_dir = './FLAME_Data'
-save_adv_dir = './FLAME_Data/adv'
+save_adv_dir = './ADV_DATA/train'
 
 input_size = 224
 
 batch_size = 1
+
+plot = False
 
 model_ft = models.resnet18(pretrained=False)
 num_ftrs = model_ft.fc.in_features
@@ -89,15 +92,15 @@ def get_adv(model, device, test_loader, epsilon, criterion):
                 data = data.squeeze().detach().cpu().numpy()
                 adv_examples.append((data, init_preds, final_pred, adv_ex))
 
-            # 保存全部的扰动样本
-            if epsilon == 0.0002:
-                perturbed_data = perturbed_data.squeeze()
-                perturbed_image = transforms.ToPILImage()(perturbed_data).convert('RGB')
-                if target.item() == 0:
-                    perturbed_image.save(os.path.join(save_adv_dir, 'Fire', 'adv' + str(adv_image_count) + '.png'))
-                else:
-                    perturbed_image.save(os.path.join(save_adv_dir, 'No_Fire', 'adv' + str(adv_image_count) + '.png'))
-                adv_image_count += 1
+            # # 保存全部的扰动样本
+            # if epsilon == 0.001:
+            #     perturbed_data = perturbed_data.squeeze().cpu()
+            #     perturbed_image = transforms.ToPILImage()(perturbed_data).convert('RGB')
+            #     if target.item() == 0:
+            #         perturbed_image.save(os.path.join(save_adv_dir, 'Fire', 'adv' + str(adv_image_count) + '.png'))
+            #     else:
+            #         perturbed_image.save(os.path.join(save_adv_dir, 'No_Fire', 'adv' + str(adv_image_count) + '.png'))
+            #     adv_image_count += 1
         else:
             #部分用于展示的样本
             if len(adv_examples) < 5:
@@ -105,14 +108,14 @@ def get_adv(model, device, test_loader, epsilon, criterion):
                 data = data.squeeze().detach().cpu().numpy()
                 adv_examples.append((data, init_preds, final_pred, adv_ex))
 
-            if epsilon == 0.0002:
-                perturbed_data = perturbed_data.squeeze()
-                perturbed_image = transforms.ToPILImage()(perturbed_data).convert('RGB')
-                if target.item() == 0:
-                    perturbed_image.save(os.path.join(save_adv_dir, 'Fire', 'adv' + str(adv_image_count) + '.png'))
-                else:
-                    perturbed_image.save(os.path.join(save_adv_dir, 'No_Fire', 'adv' + str(adv_image_count) + '.png'))
-                adv_image_count += 1
+            # if epsilon == 0.001:
+            #     perturbed_data = perturbed_data.squeeze().cpu()
+            #     perturbed_image = transforms.ToPILImage()(perturbed_data).convert('RGB')
+            #     if target.item() == 0:
+            #         perturbed_image.save(os.path.join(save_adv_dir, 'Fire', 'adv' + str(adv_image_count) + '.png'))
+            #     else:
+            #         perturbed_image.save(os.path.join(save_adv_dir, 'No_Fire', 'adv' + str(adv_image_count) + '.png'))
+            #     adv_image_count += 1
 
     final_acc = correct/float(len(test_loader['test']))
     print("Epsilon: {}\tTest Accuracy = {} / {} = {}".format(epsilon, correct, len(test_loader['test']), final_acc))
@@ -128,26 +131,27 @@ for eps in epsilons:
     accuracies.append(acc)
     examples.append(ex)
 
-cnt = 0
-plt.figure(figsize=(50, 20))
-for i in range(len(epsilons)):
-    for j in range(len(examples[i])):
-        cnt += 1
-        plt.subplot(len(epsilons), len(examples[0]*2), cnt)
-        plt.xticks([], [])
-        plt.yticks([], [])
-        if j == 0:
-            plt.ylabel("Eps: {}".format(epsilons[i]), fontsize=14)
-        image,orig,adv,ex = examples[i][j]
-        plt.title("origin")
-        plt.imshow(image.transpose([1, 2, 0]))
-        cnt += 1
-        plt.subplot(len(epsilons), len(examples[0]*2), cnt)
-        plt.title("{} -> {}".format(orig, adv))
-        plt.imshow(ex.transpose([1, 2, 0]))
-plt.tight_layout()
-# plt.show()
-plt.savefig("someadv.png")
+if plot:
+    cnt = 0
+    plt.figure(figsize=(50, 20))
+    for i in range(len(epsilons)):
+        for j in range(len(examples[i])):
+            cnt += 1
+            plt.subplot(len(epsilons), len(examples[0]*2), cnt)
+            plt.xticks([], [])
+            plt.yticks([], [])
+            if j == 0:
+                plt.ylabel("Eps: {}".format(epsilons[i]), fontsize=14)
+            image,orig,adv,ex = examples[i][j]
+            plt.title("origin")
+            plt.imshow(image.transpose([1, 2, 0]))
+            cnt += 1
+            plt.subplot(len(epsilons), len(examples[0]*2), cnt)
+            plt.title("{} -> {}".format(orig, adv))
+            plt.imshow(ex.transpose([1, 2, 0]))
+    plt.tight_layout()
+    # plt.show()
+    plt.savefig("someadv.png")
 
 
 
